@@ -13,8 +13,8 @@ import (
 
 // Result describes what happened during a Save.
 type Result struct {
-	BackupPath  string // "" if nothing existed yet
-	Reloaded    int    // number of kitty processes signalled
+	BackupPath string // "" if nothing existed yet
+	Reloaded   int    // number of kitty processes signaled
 }
 
 // Save runs the full pipeline: snapshot the existing file, write the new one,

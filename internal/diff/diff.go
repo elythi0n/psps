@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/elythi0n/psps/internal/kconf"
 	"github.com/elythi0n/psps/internal/ui"
 )

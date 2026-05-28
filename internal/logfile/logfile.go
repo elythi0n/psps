@@ -2,7 +2,7 @@
 // diagnostics are written to $XDG_STATE_HOME/psps/psps.log so the user can
 // see exactly what failed after the TUI's transient status messages clear.
 //
-// The logger initialises lazily on first call; if the state dir can't be
+// The logger initializes lazily on first call; if the state dir can't be
 // created (read-only home, permission denied) it silently downgrades to a
 // no-op rather than crashing the TUI.
 package logfile

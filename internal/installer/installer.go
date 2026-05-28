@@ -2,14 +2,14 @@
 // temporary staging directory so the caller can preview the contents before
 // moving them into the final destination. Two transports:
 //
-//   1. Single-file HTTP(S) fetch — used for raw .conf URLs
-//      (e.g. https://raw.githubusercontent.com/.../mytheme.conf).
-//   2. git clone — used for any other URL or repo shorthand
-//      (https://github.com/user/repo, git@github.com:user/repo,
-//      or the shorthand github.com/user/repo).
+//  1. Single-file HTTP(S) fetch — used for raw .conf URLs
+//     (e.g. https://raw.githubusercontent.com/.../mytheme.conf).
+//  2. git clone — used for any other URL or repo shorthand
+//     (https://github.com/user/repo, git@github.com:user/repo,
+//     or the shorthand github.com/user/repo).
 //
 // The split is deliberate: a single .conf is the safest "trust" surface (one
-// file of colour directives), while git clone gives us full repo structure
+// file of color directives), while git clone gives us full repo structure
 // for profiles but pulls arbitrary content — hence the mandatory review step
 // the caller is expected to drive before committing.
 package installer
@@ -244,7 +244,7 @@ func stageHTTPFile(rawURL string) (*Staged, error) {
 		_ = os.RemoveAll(tmp)
 		return nil, fmt.Errorf("fetch %s: %w", rawURL, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		_ = os.RemoveAll(tmp)
 		return nil, fmt.Errorf("fetch %s: HTTP %d", rawURL, resp.StatusCode)

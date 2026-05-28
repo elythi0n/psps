@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/elythi0n/psps/internal/apply"
 	"github.com/elythi0n/psps/internal/kconf"
 	"github.com/elythi0n/psps/internal/ui"

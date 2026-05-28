@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/elythi0n/psps/internal/kconf"
 	"github.com/elythi0n/psps/internal/ui"
 )
@@ -85,9 +86,6 @@ func (m *Model) Title() string { return "Keybinds" }
 func (m *Model) Init() tea.Cmd { return nil }
 
 func (m *Model) Update(msg tea.Msg) (ui.Pane, tea.Cmd) {
-	if _, ok := msg.(tea.KeyMsg); ok && m.list.FilterState() == list.Filtering {
-		// pass through
-	}
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
 	return m, cmd

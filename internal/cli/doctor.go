@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/elythi0n/psps/internal/kconf"
 	"github.com/elythi0n/psps/internal/kitty"
 	"github.com/elythi0n/psps/internal/sessionlib"

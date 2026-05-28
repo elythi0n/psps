@@ -1,4 +1,4 @@
-// Package themelib manages kitty colour themes as drop-in .conf files under
+// Package themelib manages kitty color themes as drop-in .conf files under
 // $XDG_DATA_HOME/psps/themes/ (defaults to ~/.local/share/psps/themes/).
 //
 // Theme files are kitty-native: any file kitty itself can `include` is a valid
@@ -148,7 +148,7 @@ func Find(name string) (Theme, error) {
 	return Theme{}, fmt.Errorf("theme %q not found — run `psps theme list`", name)
 }
 
-// Apply writes a theme's colour directives into the config and runs the full
+// Apply writes a theme's color directives into the config and runs the full
 // save pipeline (backup + write + reload).
 func Apply(c *kconf.Config, t Theme) (apply.Result, error) {
 	if len(t.Colors) == 0 {

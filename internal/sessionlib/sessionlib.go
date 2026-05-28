@@ -6,8 +6,8 @@
 //
 // Capturing the current layout requires kitty's remote control:
 //
-//   allow_remote_control yes
-//   listen_on unix:/tmp/kitty-{kitty_pid}
+//	allow_remote_control yes
+//	listen_on unix:/tmp/kitty-{kitty_pid}
 //
 // in kitty.conf. Without that, Save() returns a clear error.
 package sessionlib
@@ -422,7 +422,7 @@ func sanitizeJSONControlChars(in []byte) []byte {
 	return out.Bytes()
 }
 
-// contextAroundJSONError returns a human-readable snippet of `data` centred on
+// contextAroundJSONError returns a human-readable snippet of `data` centered on
 // the byte offset reported by stdlib json's *SyntaxError or *UnmarshalTypeError,
 // so log readers can see exactly which key/value tripped the parser instead of
 // just the first 160 bytes of a 17 KB document.

@@ -93,11 +93,11 @@ func TestStage_RejectsEmptySource(t *testing.T) {
 }
 
 func TestStage_UnknownScheme(t *testing.T) {
-	// A scheme we don't recognise should fall through to "don't know how to fetch".
+	// A scheme we don't recognize should fall through to "don't know how to fetch".
 	// Use a single-word, no-slashes string that also isn't an existing path.
 	_, err := Stage("notavalidsource")
 	if err == nil {
-		t.Fatal("expected error for unrecognised source")
+		t.Fatal("expected error for unrecognized source")
 	}
 }
 

@@ -3,7 +3,7 @@
 //
 // A profile lives at $XDG_DATA_HOME/psps/profiles/<name>/ and may contain:
 //
-//	theme.conf      kitty colour directives (background, foreground, color0…15, …)
+//	theme.conf      kitty color directives (background, foreground, color0…15, …)
 //	settings.conf   kitty settings (background_opacity, scrollback_lines, …)
 //	keybinds.conf   kitty map directives (map ctrl+c paste_from_clipboard …)
 //	fonts.conf      font directives (font_family, font_size, …)
@@ -99,7 +99,7 @@ func List() ([]Profile, error) {
 
 // Load resolves a profile by name. Errors if the directory doesn't exist;
 // returns a profile with an empty Files map if it exists but contains nothing
-// recognisable.
+// recognizable.
 func Load(name string) (Profile, error) {
 	dir := filepath.Join(Dir(), name)
 	info, err := os.Stat(dir)
@@ -143,13 +143,15 @@ func Apply(p Profile, c *kconf.Config) (apply.Result, error) {
 
 // applyComponent reads one component file and merges its directives into c.
 // Theme/Settings/Fonts → regular directives (Set). Keybinds → map directives
-// (SetMap).
-func applyComponent(c *kconf.Config, comp Component, path string) error {
+// (SetMap). The component kind isn't needed: each line is dispatched by its
+// own keyword (`map ...` vs. anything else), so a stray map in theme.conf or
+// a settings-style line in keybinds.conf is still handled correctly.
+func applyComponent(c *kconf.Config, _ Component, path string) error {
 	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	sc := bufio.NewScanner(f)
 	sc.Buffer(make([]byte, 64*1024), 1024*1024)
 	for sc.Scan() {
@@ -177,7 +179,7 @@ func applyComponent(c *kconf.Config, comp Component, path string) error {
 // name. The staging directory is expected to contain any subset of the four
 // component files at its root. If the source directory contains nested
 // subdirectories (e.g., a git repo with a top-level profile/ folder), we look
-// one level deep for a directory that has at least one recognisable
+// one level deep for a directory that has at least one recognizable
 // component file and use that.
 //
 // Errors if a profile with the same name already exists — caller decides on
@@ -211,7 +213,7 @@ func Install(stagedDir, name string) (Profile, error) {
 	}
 	if copied == 0 {
 		_ = os.RemoveAll(dst)
-		return Profile{}, fmt.Errorf("no recognisable component files in %s (expected one of: theme.conf, settings.conf, keybinds.conf, fonts.conf)", stagedDir)
+		return Profile{}, fmt.Errorf("no recognizable component files in %s (expected one of: theme.conf, settings.conf, keybinds.conf, fonts.conf)", stagedDir)
 	}
 	return Load(name)
 }
@@ -262,7 +264,7 @@ func copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err

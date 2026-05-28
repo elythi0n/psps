@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/elythi0n/psps/internal/sessionlib"
 	"github.com/elythi0n/psps/internal/ui"
 )

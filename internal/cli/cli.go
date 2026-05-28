@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/elythi0n/psps/internal/apply"
 	"github.com/elythi0n/psps/internal/backups"
 	"github.com/elythi0n/psps/internal/diff"
@@ -787,7 +788,7 @@ func (c *cli) cmdZoomShow() int {
 }
 
 // zoomCurrent parses the in-config font_size into a float and reports whether
-// we fell back to kitty's default (11.0). Centralised so get/show/inc/dec
+// we fell back to kitty's default (11.0). Centralized so get/show/inc/dec
 // agree.
 func zoomCurrent(raw string) (float64, bool) {
 	if raw == "" {
@@ -923,7 +924,7 @@ func streamFile(w *os.File, path string, maxLines int) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	sc := bufio.NewScanner(f)
 	sc.Buffer(make([]byte, 64*1024), 1024*1024)
 	count := 0
@@ -931,7 +932,7 @@ func streamFile(w *os.File, path string, maxLines int) error {
 		if count >= maxLines {
 			break
 		}
-		fmt.Fprintln(w, sc.Text())
+		_, _ = fmt.Fprintln(w, sc.Text())
 		count++
 	}
 	if err := sc.Err(); err != nil {
@@ -942,7 +943,7 @@ func streamFile(w *os.File, path string, maxLines int) error {
 		rest++
 	}
 	if rest > 0 {
-		fmt.Fprintf(w, "  …(%d more lines)\n", rest)
+		_, _ = fmt.Fprintf(w, "  …(%d more lines)\n", rest)
 	}
 	return nil
 }

@@ -30,12 +30,17 @@ linters:
 
   settings:
     misspell:
+      # Use US locale: third-party APIs we depend on (e.g. lipgloss.Color)
+      # are American-spelled, so a UK locale would generate hundreds of false
+      # positives we can't fix. Keep our own prose American to match.
       locale: US
 
     revive:
+      # Note: the `exported` rule (requires godoc on every exported symbol)
+      # is deliberately omitted. This project has no public Go API — all
+      # packages live under internal/, so exported symbols are only consumed
+      # by sibling internal packages. Doc-comment churn there isn't worth it.
       rules:
-        - name: exported           # exported funcs/types need a doc comment
-          arguments: [checkPrivateReceivers, disableStutteringCheck]
         - name: var-naming
         - name: error-return
         - name: error-naming
@@ -61,7 +66,6 @@ linters:
       disabled-checks:
         - ifElseChain
         - singleCaseSwitch
-        - hugeParam
 
   exclusions:
     rules:
@@ -71,11 +75,6 @@ linters:
         linters:
           - errcheck
           - revive
-
-      # main.go is the bubbletea root model; its types are pane-shaped and
-      # documented in the constructors. Skip exported-comment nags here.
-      - path: main\.go
-        text: "exported: comment on exported"
 
 formatters:
   enable:

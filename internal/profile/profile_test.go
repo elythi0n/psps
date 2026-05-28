@@ -137,10 +137,10 @@ func TestApply_MergesComponentsSelectively(t *testing.T) {
 	confPath := filepath.Join(t.TempDir(), "kitty.conf")
 	starter := strings.Join([]string{
 		"# starter",
-		"background #ffffff",        // theme domain
-		"background_opacity 0.5",    // settings domain
-		"font_family OldFont",       // fonts domain
-		"map ctrl+a select_all",     // keybinds domain
+		"background #ffffff",     // theme domain
+		"background_opacity 0.5", // settings domain
+		"font_family OldFont",    // fonts domain
+		"map ctrl+a select_all",  // keybinds domain
 		"# trailing comment",
 	}, "\n") + "\n"
 	if err := os.WriteFile(confPath, []byte(starter), 0o644); err != nil {

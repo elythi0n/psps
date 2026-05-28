@@ -9,6 +9,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/x/ansi"
+
 	"github.com/elythi0n/psps/internal/cli"
 	"github.com/elythi0n/psps/internal/kconf"
 	"github.com/elythi0n/psps/internal/logfile"
@@ -30,8 +31,8 @@ type root struct {
 	idx          int
 	focusSidebar bool
 
-	status     string
-	statusKind string
+	status      string
+	statusKind  string
 	statusUntil time.Time
 
 	sparkleFrame int
@@ -209,29 +210,32 @@ func (r *root) leaveActivePane() tea.Cmd {
 }
 
 // Layout constants. Empirically verified:
-//   lipgloss .Width(n)/.Height(n) sets the content+padding extent (border is added on top).
-//   RoundedBorder adds borderSize in each dimension.
-//   Padding(1, 2) = 1 row top+bottom, 2 cols left+right, total 2v / 4h.
+//
+//	lipgloss .Width(n)/.Height(n) sets the content+padding extent (border is added on top).
+//	RoundedBorder adds borderSize in each dimension.
+//	Padding(1, 2) = 1 row top+bottom, 2 cols left+right, total 2v / 4h.
 //
 // Vertical budget (terminal rows):
-//   title row                    1
-//   row containing sidebar/body  r.height - 2
-//   status row                   1
+//
+//	title row                    1
+//	row containing sidebar/body  r.height - 2
+//	status row                   1
 //
 // Inside the body's content area (after border + padding), we render:
-//   PaneTitle text + MarginBottom(1)   2 rows
-//   pane.View()                        paneH rows
-//   "\n" separator                     1 row
-//   help text                          1 row
-//   total content                      paneH + 4
+//
+//	PaneTitle text + MarginBottom(1)   2 rows
+//	pane.View()                        paneH rows
+//	"\n" separator                     1 row
+//	help text                          1 row
+//	total content                      paneH + 4
 //
 // So paneH = bodyContentH - 4 = (r.height - 2 - border - padV) - 4 = r.height - 10.
 const (
-	sidebarOuterW = 22
-	borderSize    = 2 // RoundedBorder adds 2 cols and 2 rows
-	padH          = 4 // Padding(1, 2) → 2 left + 2 right
-	padV          = 2 // Padding(1, 2) → 1 top  + 1 bottom
-	titleStatusH  = 2 // top title row + bottom status row
+	sidebarOuterW  = 22
+	borderSize     = 2 // RoundedBorder adds 2 cols and 2 rows
+	padH           = 4 // Padding(1, 2) → 2 left + 2 right
+	padV           = 2 // Padding(1, 2) → 1 top  + 1 bottom
+	titleStatusH   = 2 // top title row + bottom status row
 	contentChromeH = 4 // PaneTitle(2) + sep(1) + help(1) inside the content area
 )
 

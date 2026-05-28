@@ -44,7 +44,7 @@ func Load(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	c := &Config{Path: path}
 	sc := bufio.NewScanner(f)
 	sc.Buffer(make([]byte, 64*1024), 1024*1024)
@@ -155,23 +155,23 @@ func (c *Config) SaveAs(path string) error {
 	w := bufio.NewWriter(f)
 	for _, l := range c.Lines {
 		if _, err := w.WriteString(l.Raw); err != nil {
-			f.Close()
-			os.Remove(tmp)
+			_ = f.Close()
+			_ = os.Remove(tmp)
 			return err
 		}
 		if err := w.WriteByte('\n'); err != nil {
-			f.Close()
-			os.Remove(tmp)
+			_ = f.Close()
+			_ = os.Remove(tmp)
 			return err
 		}
 	}
 	if err := w.Flush(); err != nil {
-		f.Close()
-		os.Remove(tmp)
+		_ = f.Close()
+		_ = os.Remove(tmp)
 		return err
 	}
 	if err := f.Close(); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return err
 	}
 	return os.Rename(tmp, path)

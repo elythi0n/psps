@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/elythi0n/psps/internal/installer"
 	"github.com/elythi0n/psps/internal/kconf"
 	"github.com/elythi0n/psps/internal/kitty"
@@ -282,7 +283,7 @@ func (m *Model) cancelPreview() {
 	m.previewing = false
 }
 
-// OnLeave fulfils ui.Leaver — invoked by root when the user navigates away
+// OnLeave fulfills ui.Leaver — invoked by root when the user navigates away
 // (sidebar focus, tab to another pane). Reverts any live preview and bails
 // out of any in-progress input so leaving and returning doesn't strand the
 // pane in install mode.
@@ -310,7 +311,7 @@ func (m *Model) View() string {
 }
 
 // renderRight picks the right-hand panel: install input, install guide, or
-// the colour preview, depending on current mode.
+// the color preview, depending on current mode.
 func (m *Model) renderRight() string {
 	if m.installing {
 		return renderInstallPanel(m.input.View(), m.installErr)

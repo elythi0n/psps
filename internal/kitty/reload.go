@@ -15,7 +15,7 @@ import (
 
 // Reload signals every running kitty process to reread its config.
 //
-// Best-effort: errors finding processes or signalling them are returned, but
+// Best-effort: errors finding processes or signaling them are returned, but
 // callers usually want to surface them as a warning rather than abort the
 // save flow that triggered this call.
 func Reload() error {

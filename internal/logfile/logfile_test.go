@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// resetForTest re-initialises the package-level singleton so each test gets a
+// resetForTest re-initializes the package-level singleton so each test gets a
 // fresh logger pointed at its tmp dir. Tests in this file must run serially.
 func resetForTest(t *testing.T) string {
 	t.Helper()

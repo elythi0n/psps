@@ -27,7 +27,7 @@ func Snapshot(path string) (string, error) {
 		}
 		return "", err
 	}
-	defer src.Close()
+	defer func() { _ = src.Close() }()
 
 	dir := backupDir(path)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -41,8 +41,8 @@ func Snapshot(path string) (string, error) {
 		return "", err
 	}
 	if _, err := io.Copy(dst, src); err != nil {
-		dst.Close()
-		os.Remove(dest)
+		_ = dst.Close()
+		_ = os.Remove(dest)
 		return "", err
 	}
 	if err := dst.Close(); err != nil {
@@ -110,19 +110,19 @@ func Restore(target, backupPath string) error {
 	if err != nil {
 		return err
 	}
-	defer src.Close()
+	defer func() { _ = src.Close() }()
 	tmp := target + ".tmp"
 	dst, err := os.Create(tmp)
 	if err != nil {
 		return err
 	}
 	if _, err := io.Copy(dst, src); err != nil {
-		dst.Close()
-		os.Remove(tmp)
+		_ = dst.Close()
+		_ = os.Remove(tmp)
 		return err
 	}
 	if err := dst.Close(); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return err
 	}
 	return os.Rename(tmp, target)

@@ -183,7 +183,7 @@ func TestRemove_UnknownNameErrors(t *testing.T) {
 	}
 }
 
-// Pins the contract that applying a theme leaves non-colour directives —
+// Pins the contract that applying a theme leaves non-color directives —
 // in particular font_size — untouched. This is what makes `psps zoom set N`
 // survive a subsequent `psps theme apply`: only color* / background /
 // foreground / cursor* / selection_* / url_color keys get rewritten.
