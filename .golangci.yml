@@ -8,79 +8,86 @@
 # Run locally:
 #   golangci-lint run
 #
-# Compatible with golangci-lint v1.55+.
+# Schema: golangci-lint v2.
+
+version: "2"
 
 run:
   timeout: 3m
   tests: true
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - errcheck       # unchecked errors are silent bugs
     - govet          # the standard `go vet` checks
     - ineffassign    # detect assignments whose value is never read
     - staticcheck    # the big one — bugs, performance, idioms
     - unused         # unused vars, funcs, types, fields
-    - gofmt          # enforce gofmt
-    - goimports      # enforce import grouping
     - misspell       # common typos in comments and strings
     - gocritic       # extra checks (mostly correctness-focused)
     - revive         # successor to golint, configurable
 
-linters-settings:
-  goimports:
-    # Group local imports under the module path separately from third-party.
-    local-prefixes: github.com/elythi0n/psps
+  settings:
+    misspell:
+      locale: US
 
-  misspell:
-    locale: US
+    revive:
+      rules:
+        - name: exported           # exported funcs/types need a doc comment
+          arguments: [checkPrivateReceivers, disableStutteringCheck]
+        - name: var-naming
+        - name: error-return
+        - name: error-naming
+        - name: if-return
+        - name: increment-decrement
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: errorf
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: empty-block
+        - name: superfluous-else
+        - name: unused-parameter
+        - name: unreachable-code
 
-  revive:
+    gocritic:
+      # Disable a few overly opinionated checks. Reuse of the same variable name
+      # for shadowing is sometimes the clearest thing.
+      disabled-checks:
+        - ifElseChain
+        - singleCaseSwitch
+        - hugeParam
+
+  exclusions:
     rules:
-      - name: exported           # exported funcs/types need a doc comment
-        arguments: [checkPrivateReceivers, disableStutteringCheck]
-      - name: var-naming
-      - name: error-return
-      - name: error-naming
-      - name: if-return
-      - name: increment-decrement
-      - name: range
-      - name: receiver-naming
-      - name: time-naming
-      - name: unexported-return
-      - name: errorf
-      - name: blank-imports
-      - name: context-as-argument
-      - name: context-keys-type
-      - name: dot-imports
-      - name: empty-block
-      - name: superfluous-else
-      - name: unused-parameter
-      - name: unreachable-code
+      # Test files routinely have less-strict expectations around docs and
+      # ignored returns. Mute the most noisy of those there.
+      - path: _test\.go
+        linters:
+          - errcheck
+          - revive
 
-  gocritic:
-    # Disable a few overly opinionated checks. Reuse of the same variable name
-    # for shadowing is sometimes the clearest thing.
-    disabled-checks:
-      - ifElseChain
-      - singleCaseSwitch
-      - hugeParam
+      # main.go is the bubbletea root model; its types are pane-shaped and
+      # documented in the constructors. Skip exported-comment nags here.
+      - path: main\.go
+        text: "exported: comment on exported"
+
+formatters:
+  enable:
+    - gofmt          # enforce gofmt
+    - goimports      # enforce import grouping
+  settings:
+    goimports:
+      # Group local imports under the module path separately from third-party.
+      local-prefixes:
+        - github.com/elythi0n/psps
 
 issues:
   # Don't hide issues just because they appear many times.
   max-issues-per-linter: 0
   max-same-issues: 0
-
-  exclude-rules:
-    # Test files routinely have less-strict expectations around docs and
-    # ignored returns. Mute the most noisy of those there.
-    - path: _test\.go
-      linters:
-        - errcheck
-        - revive
-
-    # main.go is the bubbletea root model; its types are pane-shaped and
-    # documented in the constructors. Skip exported-comment nags here.
-    - path: main\.go
-      text: "exported: comment on exported"
