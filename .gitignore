@@ -1,0 +1,22 @@
+# build artifacts
+/build/
+/psps
+
+# makepkg outputs
+/pkg/
+/src/
+*.pkg.tar.zst
+*.pkg.tar.xz
+
+# goreleaser snapshot output
+/dist/
+
+# go
+*.test
+*.out
+vendor/
+
+# editor scratch
+.idea/
+.vscode/
+*.swp

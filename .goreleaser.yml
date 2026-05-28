@@ -1,0 +1,121 @@
+# GoReleaser configuration for psps.
+#
+# Local dry-run (does NOT publish, writes to ./dist/):
+#   goreleaser release --snapshot --clean
+#
+# Validate without building:
+#   goreleaser check
+#
+# Real release is run by .github/workflows/release.yml on a `v*` tag push.
+
+version: 2
+
+project_name: psps
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: psps
+    main: .
+    binary: psps
+    env:
+      # Pure-Go build → fully static, runs on any glibc/musl Linux without
+      # surprises. No C dependencies in the tree.
+      - CGO_ENABLED=0
+    # kitty itself ships only for Linux and macOS — Windows isn't a supported
+    # target upstream, and the SIGUSR1 reload path in internal/kitty has no
+    # cross-platform analog. Drop windows from the matrix and the rest of the
+    # CLI (theme/profile management for remote configs) is what's left worth
+    # shipping there, which isn't enough to justify the build complexity.
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      # Same -X target as the Makefile so `psps version` reports the tag.
+      # `{{.Version}}` strips the leading "v" — re-add it to match VERSION file.
+      - -X github.com/elythi0n/psps/internal/cli.version=v{{.Version}}
+
+archives:
+  - id: psps
+    formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - LICENSE
+      - README.md
+      - AGENTS.md
+      - CONTRIBUTING.md
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  # Drop the leading `v` from the tag so the version string matches the shape
+  # `{{.Version}}` would produce on a real release. Without this, `v{{.Version}}`
+  # in ldflags ends up as `vv0.0.0-next` in snapshot builds.
+  version_template: '{{ trimprefix .Tag "v" }}-next'
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+      - 'Merge pull request'
+      - 'Merge branch'
+
+# nfpm builds .deb/.rpm/.apk packages from the cross-compiled binaries.
+# The same artifacts that ship as tarballs also become installable packages
+# for Debian/Ubuntu, Fedora/RHEL, and Alpine.
+nfpms:
+  - id: psps
+    package_name: psps
+    vendor: Marcos Raudkett
+    homepage: https://github.com/elythi0n/psps
+    maintainer: Elythi0n <info@marcosraudkett.com>
+    description: |-
+      Config manager for the kitty terminal.
+      TUI + CLI for themes, sessions, fonts, and arbitrary kitty.conf edits,
+      with automatic backups and live reload via SIGUSR1.
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+    recommends:
+      - kitty
+    contents:
+      - src: ./LICENSE
+        dst: /usr/share/doc/psps/LICENSE
+      - src: ./README.md
+        dst: /usr/share/doc/psps/README.md
+      - src: ./AGENTS.md
+        dst: /usr/share/doc/psps/AGENTS.md
+      - src: ./CONTRIBUTING.md
+        dst: /usr/share/doc/psps/CONTRIBUTING.md
+
+release:
+  github:
+    owner: elythi0n
+    name: psps
+  draft: false
+  # Auto-mark `v0.2.0-beta1` etc. as prerelease based on semver.
+  prerelease: auto
+  name_template: "psps {{ .Tag }}"
+  header: |
+    psps {{ .Tag }} — install options below.
+
+    See [README.md](https://github.com/elythi0n/psps#install) for distro-specific
+    instructions, and [AGENTS.md](https://github.com/elythi0n/psps/blob/main/AGENTS.md)
+    if you're driving psps from an AI agent.
