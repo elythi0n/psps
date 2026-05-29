@@ -97,4 +97,3 @@ func TestDisabled_NoFileCreated(t *testing.T) {
 		t.Errorf("state dir was created despite logging being disabled")
 	}
 }
-
