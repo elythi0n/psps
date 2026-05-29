@@ -81,7 +81,7 @@ func New(conf *kconf.Config) *Model {
 	for _, f := range all {
 		items = append(items, f)
 	}
-	l.SetItems(items)
+	m.list.SetItems(items)
 	return m
 }
 
