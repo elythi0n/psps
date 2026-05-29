@@ -9,7 +9,7 @@
 # on a fresh machine, `git clone` the repo first, then run makepkg there.
 
 pkgname=psps
-pkgver=0.2.0
+pkgver=0.3.0
 pkgrel=1
 pkgdesc="TUI for managing kitty (themes, sessions, keybinds, fonts)"
 arch=('x86_64')
