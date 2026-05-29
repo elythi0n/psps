@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/elythi0n/psps/internal/apply"
 	"github.com/elythi0n/psps/internal/kconf"
@@ -148,15 +149,29 @@ func (m *Model) View() string {
 	if !ok {
 		return left
 	}
-	preview := renderPreview(sel, m.conf.Get("font_size"))
+	// Right pane budget: total pane width minus list width minus the 2-col gap.
+	// If there's no meaningful room, drop the preview entirely rather than
+	// letting it overflow and get clipped by the parent box.
+	previewW := m.w - listWidth(m.w) - 2
+	if previewW < 20 {
+		return left
+	}
+	preview := renderPreview(sel, m.conf.Get("font_size"), previewW)
 	return lipgloss.JoinHorizontal(lipgloss.Top, left, "  ", preview)
 }
 
-func renderPreview(f Font, size string) string {
+func renderPreview(f Font, size string, w int) string {
+	// Box chrome: RoundedBorder adds 2 cols, Padding(1, 2) adds 4 cols.
+	contentW := w - 6
+	if contentW < 8 {
+		contentW = 8
+	}
+
 	box := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color(ui.Overlay)).
-		Padding(1, 2)
+		Padding(1, 2).
+		Width(contentW)
 
 	lines := []string{
 		ui.PaneTitle.Render(f.Family),
@@ -166,6 +181,11 @@ func renderPreview(f Font, size string) string {
 		"0123456789  !@#$%^&*()  →←↑↓  ✓ ✗ ★ ☆",
 		"const greet = (name: string) => `hi ${name}`;",
 		"git status · npm install · cargo build",
+	}
+	for i, ln := range lines {
+		if lipgloss.Width(ln) > contentW {
+			lines[i] = ansi.Truncate(ln, contentW, "…")
+		}
 	}
 	return box.Render(strings.Join(lines, "\n"))
 }
@@ -183,11 +203,18 @@ func (m *Model) Help() string {
 
 func (m *Model) SetSize(w, h int) {
 	m.w, m.h = w, h
-	listW := w/2 - 2
-	if listW < 24 {
-		listW = 24
+	m.list.SetSize(listWidth(w), h-4)
+}
+
+// listWidth is the column budget for the left-hand fonts list. The remainder
+// of the pane (minus a 2-col gap) is given to the preview box. Kept in one
+// place so View and SetSize agree on the split.
+func listWidth(paneW int) int {
+	w := paneW/2 - 2
+	if w < 24 {
+		w = 24
 	}
-	m.list.SetSize(listW, h-4)
+	return w
 }
 
 func (m *Model) CapturingKeys() bool {
