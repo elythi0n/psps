@@ -4,19 +4,22 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"testing"
 )
 
 // resetForTest re-initializes the package-level singleton so each test gets a
 // fresh logger pointed at its tmp dir. Tests in this file must run serially.
+// Logging is enabled by default for tests that exercise write paths; tests
+// covering the disabled state call SetEnabled(false) themselves.
 func resetForTest(t *testing.T) string {
 	t.Helper()
 	tmp := t.TempDir()
 	t.Setenv("XDG_STATE_HOME", tmp)
-	once = sync.Once{}
+	mu.Lock()
 	logger = nil
 	path = ""
+	mu.Unlock()
+	SetEnabled(true)
 	return filepath.Join(tmp, "psps", "psps.log")
 }
 
@@ -48,10 +51,12 @@ func TestErrorfAndInfof_PersistToFile(t *testing.T) {
 func TestLog_AppendsAcrossRuns(t *testing.T) {
 	want := resetForTest(t)
 	Infof("first")
-	// Simulate a second process run by re-resetting `once` but keeping HOME.
-	once = sync.Once{}
+	// Simulate a second process run by re-zeroing the lazy state but keeping
+	// the state-home env so we point at the same file.
+	mu.Lock()
 	logger = nil
 	path = ""
+	mu.Unlock()
 	Infof("second")
 
 	data, _ := os.ReadFile(want)
@@ -70,3 +75,26 @@ func TestStateDir_FallsBackToHomeWhenXDGUnset(t *testing.T) {
 		t.Errorf("stateDir() = %q, want %q", got, want)
 	}
 }
+
+func TestDisabled_NoFileCreated(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("XDG_STATE_HOME", tmp)
+	mu.Lock()
+	logger = nil
+	path = ""
+	mu.Unlock()
+	SetEnabled(false)
+
+	Errorf("should not write")
+	Infof("should not write either")
+
+	if p := Path(); p != "" {
+		t.Errorf("Path() = %q, want empty when disabled", p)
+	}
+	// State dir creation is part of the open path — when disabled, we
+	// shouldn't have created it.
+	if _, err := os.Stat(filepath.Join(tmp, "psps")); err == nil {
+		t.Errorf("state dir was created despite logging being disabled")
+	}
+}
+

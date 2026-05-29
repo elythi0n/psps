@@ -25,9 +25,11 @@ import (
 	"github.com/elythi0n/psps/internal/installer"
 	"github.com/elythi0n/psps/internal/kconf"
 	"github.com/elythi0n/psps/internal/kitty"
+	"github.com/elythi0n/psps/internal/logfile"
 	"github.com/elythi0n/psps/internal/profile"
 	"github.com/elythi0n/psps/internal/sessionlib"
 	"github.com/elythi0n/psps/internal/themelib"
+	"github.com/elythi0n/psps/internal/userconf"
 )
 
 //go:embed AGENTS.md
@@ -62,25 +64,42 @@ func (c *cli) fail(msg string, exit int) int {
 	return exit
 }
 
-// extractJSON strips --json from args (anywhere it appears) and returns the
-// remainder plus whether the flag was seen.
-func extractJSON(args []string) (bool, []string) {
+// extractGlobalFlags strips global flags (--json, --log) from args wherever
+// they appear and returns the remainder plus which flags were seen. New
+// global flags should be added here so subcommand handlers don't have to
+// re-parse them.
+func extractGlobalFlags(args []string) (jsonFlag, logFlag bool, rest []string) {
 	out := make([]string, 0, len(args))
-	seen := false
 	for _, a := range args {
-		if a == "--json" {
-			seen = true
+		switch a {
+		case "--json":
+			jsonFlag = true
+			continue
+		case "--log":
+			logFlag = true
 			continue
 		}
 		out = append(out, a)
 	}
-	return seen, out
+	return jsonFlag, logFlag, out
 }
 
 // Run dispatches argv (excluding the program name) and returns an exit code.
 func Run(args []string) int {
-	json, args := extractJSON(args)
-	c := &cli{json: json}
+	jsonFlag, logFlag, args := extractGlobalFlags(args)
+
+	// Logging is opt-in. Resolve in priority order: --log flag > env var >
+	// config file > default off.
+	s, _ := userconf.Load(userconf.Default())
+	if v := os.Getenv("PSPS_LOG"); v != "" {
+		s.LogEnabled = userconf.IsTruthy(v)
+	}
+	if logFlag {
+		s.LogEnabled = true
+	}
+	logfile.SetEnabled(s.LogEnabled)
+
+	c := &cli{json: jsonFlag}
 
 	if len(args) == 0 {
 		printHelp()
@@ -190,9 +209,16 @@ usage:
 
 flags:
   --json                            emit a single JSON object on stdout (also routes errors to stdout)
+  --log                             enable diagnostic logging for this invocation
   --dry-run                         print the diff instead of writing (works with set/font/theme apply)
   --yes                             skip confirmation prompts on install commands
   --name <id>                       override the install name derived from the source
+
+logging (off by default):
+  --log                             enable for this invocation
+  PSPS_LOG=1                        enable via environment
+  ~/.config/psps/config             persistent: add a line ` + "`log = on`" + `
+  log file:                         $XDG_STATE_HOME/psps/psps.log (or ~/.local/state/psps/psps.log)
 `
 	fmt.Print(usage)
 }

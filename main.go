@@ -19,6 +19,7 @@ import (
 	"github.com/elythi0n/psps/internal/panes/settings"
 	"github.com/elythi0n/psps/internal/panes/themes"
 	"github.com/elythi0n/psps/internal/ui"
+	"github.com/elythi0n/psps/internal/userconf"
 )
 
 type root struct {
@@ -383,10 +384,19 @@ func main() {
 	if len(os.Args) > 1 {
 		os.Exit(cli.Run(os.Args[1:]))
 	}
+	// Logging is opt-in. Resolve in priority order: env var > config file >
+	// default off. (The TUI has no flag surface; use the env var for one-off
+	// debug sessions, or `log = on` in ~/.config/psps/config to persist.)
+	s, _ := userconf.Load(userconf.Default())
+	if v := os.Getenv("PSPS_LOG"); v != "" {
+		s.LogEnabled = userconf.IsTruthy(v)
+	}
+	logfile.SetEnabled(s.LogEnabled)
+
 	// Record the env that drives kitty remote-control so failures further
 	// down can be correlated against startup conditions. KITTY_LISTEN_ON is
 	// the critical one — its absence is the most common cause of session
-	// save failures from raw-mode TUIs.
+	// save failures from raw-mode TUIs. No-op when logging is disabled.
 	logfile.Infof(
 		"psps starting · KITTY_LISTEN_ON=%q · KITTY_PID=%q · TERM=%q",
 		os.Getenv("KITTY_LISTEN_ON"),
